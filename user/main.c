@@ -20,8 +20,8 @@ int main(void)
 
     while (1) {
         GPIO_ResetBits(GPIOC, GPIO_Pin_13);   /* LED on  (active low) */
-        Delay(500000);
+        Delay(2000000);
         GPIO_SetBits(GPIOC, GPIO_Pin_13);     /* LED off */
-        Delay(500000);
+        Delay(2000000);
     }
 }
