@@ -1,81 +1,57 @@
-# STM32 Makefile Template
+# STM32F10x Makefile Template
 
-[![Build Status](https://travis-ci.org/freelamb/stm32f10x_makefile_template.svg?branch=master)](https://travis-ci.org/freelamb/stm32f10x_makefile_template)
+基于 STM32F103C8T6 (Blue Pill) 的 Makefile 工程模板，使用 STM32 Standard Peripheral Library。
 
-## Requirement
+## 环境要求
 
-Working GNU ARM GCC (https://launchpad.net/gcc-arm-embedded)
+- arm-none-eabi-gcc 工具链
+- [stlink](https://github.com/texane/stlink) — 烧录工具
+- [OpenOCD](https://openocd.org/) — 调试服务器
+- VS Code 扩展：[Cortex-Debug](https://marketplace.visualstudio.com/items?itemName=marus25.cortex-debug)、[C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
 
-Texane stlink to flash the STM32F10x (https://github.com/texane/stlink)
+## 使用
 
-
-## Usage
-
-### build project
-
-```
-$ make
-```
-
-### clean project
-
-```
-$ make clean
+```bash
+make            # 编译
+make clean      # 清理
+make flash      # 烧录到 MCU
+make erase      # 擦除 Flash
 ```
 
-### download to mcu by stlink 
-```
-$ make flash
-```
+## 调试
 
-### erase flash
-```
-$ make erase
-```
+### VS Code
 
-### download main.bin to mcu
-```
-$ ./build.sh
-```
+1. 安装 Cortex-Debug 和 C/C++ 扩展
+2. `Ctrl+Shift+B` 编译
+3. `F5` 选择 **Debug (OpenOCD)** 启动调试
 
-## Debug base on st-link
+### 命令行
 
-start debug
-```
-$ st-util
-```
+```bash
+# 终端 1：启动 OpenOCD
+openocd -f interface/stlink.cfg -f target/stm32f1x.cfg
 
-open shell in project root dir
-```
-$ arm-none-eabi-gdb *.elf
-
-GNU gdb (GNU Tools for ARM Embedded Processors) 7.10.1.20160923-cvs
-Copyright (C) 2015 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
-and "show warranty" for details.
-This GDB was configured as "--host=x86_64-apple-darwin10 --target=arm-none-eabi".
-Type "show configuration" for configuration details.
-For bug reporting instructions, please see:
-<http://www.gnu.org/software/gdb/bugs/>.
-Find the GDB manual and other documentation resources online at:
-<http://www.gnu.org/software/gdb/documentation/>.
-For help, type "help".
-Type "apropos word" to search for commands related to "word"...
-Reading symbols from z2_cmcc_b_app.elf...done.
-...
-(gdb) target extended-remote :4242
-...
+# 终端 2：连接 GDB
+arm-none-eabi-gdb stm32f10x_makefile_template.elf
+(gdb) target extended-remote :3333
+(gdb) monitor reset halt
+(gdb) load
+(gdb) continue
 ```
 
-Clion configure debug reference
+## 项目结构
 
-https://www.yuque.com/freelamb/iot_tech/aezu7s
+```
+├── Makefile                 # 主 Makefile
+├── makefile_std_lib.mk      # STM32 标准库配置
+├── stm32_flash.ld           # 链接脚本
+├── user/
+│   └── main.c               # 用户代码
+└── stm32f10x_lib/           # STM32 标准外设库 + CMSIS
+```
 
-## Example
+## 硬件
 
-mcu: STM32F103C8T6
-
-GPIOB6--Led
-
+- MCU: STM32F103C8T6 (Cortex-M3, 64K Flash, 20K RAM)
+- 板载 LED: PC13 (低电平点亮)
