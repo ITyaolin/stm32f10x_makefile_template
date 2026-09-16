@@ -205,7 +205,8 @@ void debug(const char *format, ...)
 
     va_start( args, format );
     print( 0, format, args );
-    print( 0, "\n", args);
+    /* print() already called va_end(args), output newline directly */
+    printchar( 0, '\n' );
 }
 
 int sprintf(char *out, const char *format, ...)

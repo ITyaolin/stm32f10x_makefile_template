@@ -80,11 +80,11 @@ $(OBJ_DIRS):
 	mkdir -p $@
 
 # compile .c -> .o
-$(OUTPUT_DIR)/%.o: %.c
+$(OUTPUT_DIR)/%.o: %.c | $(OBJ_DIRS)
 	$(CC) -c $(CP_FLAGS) -I . $(INC_DIR) $< -o $@
 
 # assemble .s -> .o
-$(OUTPUT_DIR)/%.o: %.s
+$(OUTPUT_DIR)/%.o: %.s | $(OBJ_DIRS)
 	$(AS) -c $(AS_FLAGS) $< -o $@
 
 # link
