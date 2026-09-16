@@ -6,7 +6,7 @@
             "type": "cortex-debug",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/stm32f10x_makefile_template.elf",
+            "executable": "${workspaceFolder}/output/${workspaceFolderBasename}.elf",
             "servertype": "openocd",
             "device": "STM32F103C8",
             "configFiles": [

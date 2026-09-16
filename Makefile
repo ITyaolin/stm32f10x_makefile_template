@@ -13,6 +13,9 @@ MCU          = cortex-m3
 # all the files will be generated with this name (main.elf, main.bin, main.hex, etc)
 PROJECT_NAME=stm32f10x_makefile_template
 
+# output directory
+OUTPUT_DIR   = output
+
 # specify define
 DDEFS       =
 
@@ -51,50 +54,54 @@ INC_DIR  = $(patsubst %, -I%, $(INCLUDE_DIRS))
 # run from Flash
 DEFS	 = $(DDEFS) -DRUN_FROM_FLASH=1
 
-OBJECTS  = $(ASM_SRC:.s=.o) $(SRC:.c=.o) $(STM32F10X_LIB_SRC:.c=.o)
+# build output paths (mirror source tree under output/)
+OBJECTS = $(addprefix $(OUTPUT_DIR)/, $(ASM_SRC:.s=.o) $(SRC:.c=.o) $(STM32F10X_LIB_SRC:.c=.o))
+
+# collect unique output directories
+OBJ_DIRS = $(sort $(dir $(OBJECTS)))
 
 # Define optimisation level here
 OPT = -Os
 
 MC_FLAGS = -mcpu=$(MCU)
 
-AS_FLAGS = $(MC_FLAGS) -g -gdwarf-2 -mthumb  -Wa,-amhls=$(<:.s=.lst)
-CP_FLAGS = $(MC_FLAGS) $(OPT) -g -gdwarf-2 -mthumb -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
-LD_FLAGS = $(MC_FLAGS) -g -gdwarf-2 -mthumb -nostartfiles -Xlinker --gc-sections -T$(LINK_SCRIPT) -Wl,-Map=$(PROJECT_NAME).map,--cref,--no-warn-mismatch
+AS_FLAGS = $(MC_FLAGS) -g -gdwarf-2 -mthumb -Wa,-amhls=$(@:.o=.lst)
+CP_FLAGS = $(MC_FLAGS) $(OPT) -g -gdwarf-2 -mthumb -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(@:.o=.lst) $(DEFS)
+LD_FLAGS = $(MC_FLAGS) -g -gdwarf-2 -mthumb -nostartfiles -Xlinker --gc-sections -T$(LINK_SCRIPT) -Wl,-Map=$(OUTPUT_DIR)/$(PROJECT_NAME).map,--cref,--no-warn-mismatch
 
 #
 # makefile rules
 #
-all: $(OBJECTS) $(PROJECT_NAME).elf  $(PROJECT_NAME).hex $(PROJECT_NAME).bin
-	$(TOOLCHAIN)size $(PROJECT_NAME).elf
+all: $(OBJ_DIRS) $(OBJECTS) $(OUTPUT_DIR)/$(PROJECT_NAME).elf $(OUTPUT_DIR)/$(PROJECT_NAME).hex $(OUTPUT_DIR)/$(PROJECT_NAME).bin
+	$(TOOLCHAIN)size $(OUTPUT_DIR)/$(PROJECT_NAME).elf
 
-%.o: %.c
+# create output directories (order-only prerequisite)
+$(OBJ_DIRS):
+	mkdir -p $@
+
+# compile .c -> .o
+$(OUTPUT_DIR)/%.o: %.c
 	$(CC) -c $(CP_FLAGS) -I . $(INC_DIR) $< -o $@
 
-%.o: %.s
+# assemble .s -> .o
+$(OUTPUT_DIR)/%.o: %.s
 	$(AS) -c $(AS_FLAGS) $< -o $@
 
-%.elf: $(OBJECTS)
+# link
+$(OUTPUT_DIR)/%.elf: $(OBJECTS)
 	$(CC) $(OBJECTS) $(LD_FLAGS) -o $@
 
-%.hex: %.elf
+$(OUTPUT_DIR)/%.hex: $(OUTPUT_DIR)/%.elf
 	$(HEX) $< $@
 
-%.bin: %.elf
+$(OUTPUT_DIR)/%.bin: $(OUTPUT_DIR)/%.elf
 	$(BIN)  $< $@
 
-flash: $(PROJECT_NAME).bin
-	st-flash write $(PROJECT_NAME).bin 0x8000000
+flash: $(OUTPUT_DIR)/$(PROJECT_NAME).bin
+	st-flash write $(OUTPUT_DIR)/$(PROJECT_NAME).bin 0x8000000
 
 erase:
 	st-flash erase
 
 clean:
-	-rm -rf $(OBJECTS)
-	-rm -rf $(PROJECT_NAME).elf
-	-rm -rf $(PROJECT_NAME).map
-	-rm -rf $(PROJECT_NAME).hex
-	-rm -rf $(PROJECT_NAME).bin
-	-rm -rf $(SRC:.c=.lst)
-	-rm -rf $(ASM_SRC:.s=.lst)
-
+	-rm -rf $(OUTPUT_DIR)
