@@ -37,7 +37,6 @@ STM32F10X_LIB_SRC      =
 # user specific
 SRC         =
 SRC         += $(USER_DIR)/main.c
-SRC         += $(USER_DIR)/uart_log.c
 
 ASM_SRC      =
 
