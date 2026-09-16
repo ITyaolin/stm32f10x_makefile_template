@@ -12,9 +12,9 @@
 ## 使用
 
 ```bash
-make            # 编译
-make clean      # 清理
-make flash      # 烧录到 MCU
+make            # 编译（产物在 output/ 目录）
+make clean      # 清理 output/
+make flash      # 编译 + 烧录到 MCU
 make erase      # 擦除 Flash
 ```
 
@@ -33,7 +33,7 @@ make erase      # 擦除 Flash
 openocd -f interface/stlink.cfg -f target/stm32f1x.cfg
 
 # 终端 2：连接 GDB
-arm-none-eabi-gdb stm32f10x_makefile_template.elf
+arm-none-eabi-gdb output/stm32f10x_makefile_template.elf
 (gdb) target extended-remote :3333
 (gdb) monitor reset halt
 (gdb) load
@@ -45,10 +45,12 @@ arm-none-eabi-gdb stm32f10x_makefile_template.elf
 ```
 ├── Makefile                 # 主 Makefile
 ├── makefile_std_lib.mk      # STM32 标准库配置
+├── build.sh                 # 一键编译 + 烧录脚本
 ├── stm32_flash.ld           # 链接脚本
 ├── user/
-│   └── main.c               # 用户代码
-└── stm32f10x_lib/           # STM32 标准外设库 + CMSIS
+│   └── main.c               # 用户代码（LED 闪烁）
+├── stm32f10x_lib/           # STM32 标准外设库 + CMSIS
+└── output/                  # 编译产物（.o .elf .hex .bin .map .lst）
 ```
 
 ## 硬件
